@@ -5,7 +5,7 @@ from django.db import models
 class FinancialOperation(models.Model):
     positionNumber = models.BigIntegerField()
     whoPayed = models.TextField(max_length=1000)
-    fileLink = models.TextField(max_length = 1000)
+    fileLink = models.FileField(upload_to='documents/%Y/%m/%d')
     datetime = models.DateTimeField(u'Дата')
     amount = models.FloatField(u'Сумма')
     alreadyPayed = models.FloatField(u'Оплачено')

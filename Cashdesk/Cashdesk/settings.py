@@ -29,7 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'cashdesk2.gate12a.com']
 
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 # Application definition
 
 INSTALLED_APPS = (
@@ -54,6 +55,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'Cashdesk.urls'
+
 
 TEMPLATES = [
     {

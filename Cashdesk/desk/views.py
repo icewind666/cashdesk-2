@@ -13,6 +13,8 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
 from django.conf import settings
+from __builtin__ import False
+from desk.forms import DocumentForm
 
 
 class FinancialOperationListView(ListView):
@@ -36,6 +38,7 @@ class AllOperationsView(View):
                 operations = FinancialOperation.objects.order_by('-datetime')
                 context_dict = {}    
                 context_dict['operations'] = operations
+                context_dict['form'] = DocumentForm()
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
                 print(e.__doc__)
@@ -63,70 +66,43 @@ class AdminGroupRequiredMixin(object):
 '''
 Adding spent operation
 '''     
-class AddSpentView(EditorGroupRequiredMixin, View):
-    
-    def post(self, request):
+def addrecord(request):
+    if request.method == 'POST':
         try:
-            amount = request.POST["amount"]
-            comment = request.POST["comment"];
-            op = FinancialOperation()
-            op.amount = amount
-            op.comment = comment
-            op.isSpent = True
-            op.datetime = datetime.datetime.now()
-            op.save()
-            return HttpResponse('ok');
+            form = DocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                print 'we are here'
+                filOther = form.cleaned_data['fileLink']
+                fileUploaded = request.FILES['fileLink']
+                print request.FILES['fileLink']
+                amount = request.POST["amount"]
+                print amount
+                positionNumber = request.POST["positionNumber"];
+                print positionNumber
+                whoPayed = request.POST["whoPayed"];
+                print whoPayed
+                alreadyPayed = request.POST["alreadyPayed"];
+                print alreadyPayed
+                isClosed = False
+                
+                if amount == alreadyPayed:
+                    isClosed = True
+                    
+                op = FinancialOperation()
+                op.amount = amount
+                op.positionNumber = positionNumber
+                op.isClosed = isClosed
+                op.whoPayed = whoPayed
+                op.alreadyPayed = alreadyPayed
+                op.datetime = datetime.datetime.now()
+                op.fileLink = fileUploaded
+                
+                #print op.toJSON()
+                
+                op.save()
+                
+            return HttpResponseRedirect('/');
         except Exception as e:
             print(e.__doc__)
             print(e.message)
 
-'''
-Adding income operation
-'''
-class AddIncomeView(EditorGroupRequiredMixin, View):
-    def post(self, request):
-        try:
-            amount = request.POST["amount"]
-            comment = request.POST["comment"];
-            op = FinancialOperation()
-            op.amount = amount
-            op.comment = comment
-            op.isSpent = False
-            op.datetime = datetime.datetime.now()
-            op.save()
-            return HttpResponse('ok');
-        except Exception as e:
-            print(e.__doc__)
-            print(e.message)
-
-'''
-Removing all data and start with previous remainder
-'''
-class ArchiveView(AdminGroupRequiredMixin, View):
-    def post(self, request):
-        try:
-            print('archiving data...')
-            
-            # save the remainder
-            rem = FinancialOperation.get_remainder()
-            print(rem)
-            FinancialOperation.objects.all().delete()
-            
-            # now adding remainder as income if it is >0
-            print('records removed. adding remainder')
-            finOperation = FinancialOperation()
-            finOperation.isSpent = True if rem < 0 else False
-            finOperation.amount = math.fabs(rem)
-            finOperation.datetime = datetime.datetime.now()
-            finOperation.comment = "остаток предыдущего месяца"
-            #print(finOperation)
-            finOperation.save()
-            print('remainder added')
-            
-            
-            
-            return HttpResponse('ok');
-        except Exception as e:
-            print(e.__doc__)
-            print(e.message)
-            return HttpResponse('ok')

@@ -17,8 +17,8 @@
             <tr>
         {% endif %}
         
-        <td> {{ op.datetime }} </td>
-        <td> {{ op.fileLink }} </td>
+        <td> {{ op.positionNumber }} </td>
+        <td> <a href="/media/{{ op.fileLink }}">{{ op.fileLink }}</a> </td>
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>

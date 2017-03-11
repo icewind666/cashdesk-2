@@ -4,15 +4,17 @@
 {% if user.is_authenticated %}
 {% if user|in_group:"editors" %}
 
-<div class="col-sm-6">
-<form role="form" class="form">
-  <div class="form-group" id="income-group" name="income-group">
-    <label class="control-label"><h4>Приход</h4></label>
-    <input type="text" class="form-control input-lg" placeholder="сумма..." value="0.0" id="income_amount"/>
-    <br/>
-    <textarea rows="2" class="form-control" placeholder="комментарий..." id="income_comment"></textarea>
-    <br />    
-    <button type="submit" class="btn btn-info btn-block" id="addincome" >Внести</button>
+<div class="col-sm-12">
+<form role="form" class="form-inline" method="post" enctype="multipart/form-data" action="/addrecord/">
+{% csrf_token %}
+  <div class="form-group" id="income-group" name="income-group" >
+  <input type="text" class="form-control input-sm" placeholder="номер" name="positionNumber" id="positionNumber"/>
+  <input type="file" class="form-control input-sm" placeholder="файл" id="fileLink" name="fileLink"/>
+    <input type="text" class="form-control input-sm" placeholder="плательщик" name="whoPayed"/>
+    <input type="text" class="form-control input-sm" placeholder="сумма" name="amount"/>
+    <input type="text" class="form-control input-sm" placeholder="оплачено" name="alreadyPayed"/>
+      <br /><br />
+    <input type="submit" class="btn btn-info btn-block" id="addrecord" value="Внести"/>
   </div>
 </form>
 </div>
@@ -39,8 +41,8 @@
         <tr>
         {% endif %}
         
-        <td> {{ op.datetime }} </td>
-        <td> {{ op.fileLink }} </td>
+        <td> {{ op.positionNumber }} </td>
+        <td> <a href="/media/{{ op.fileLink }}">{{ op.fileLink }}</a> </td>
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
