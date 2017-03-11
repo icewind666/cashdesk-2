@@ -1,0 +1,71 @@
+{% extends "desk/main.html" %}
+{% load has_group %}
+{% block content %}
+{% if user.is_authenticated %}
+{% if user|in_group:"editors" %}
+
+<div class="col-sm-6">
+<form role="form" class="form">
+  <div class="form-group" id="income-group" name="income-group">
+    <label class="control-label"><h4>Приход</h4></label>
+    <input type="text" class="form-control input-lg" placeholder="сумма..." value="0.0" id="income_amount"/>
+    <br/>
+    <textarea rows="2" class="form-control" placeholder="комментарий..." id="income_comment"></textarea>
+    <br />    
+    <button type="submit" class="btn btn-info btn-block" id="addincome" >Внести</button>
+  </div>
+</form>
+</div>
+
+{%endif%}
+<div id="operations">    
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr>
+            <td>Номер</td>
+            <td>Файл</td>
+            <td>Плательщик</td>
+            <td>Сумма</td>
+            <td>Оплачено</td>
+                        <td>&nbsp;</td>
+
+        </tr>
+    </thead>
+    <tbody>
+    {% for op in object_list %}
+        {% if op.isClosed == 1 %}
+            <tr class="success">
+        {% else %}
+        <tr>
+        {% endif %}
+        
+        <td> {{ op.datetime }} </td>
+        <td> {{ op.fileLink }} </td>
+        <td> {{ op.whoPayed }} </td>
+        <td> {{ op.amount }} </td>
+        <td> {{ op.alreadyPayed }} </td>
+        {% if op.isClosed == 0 %}
+        <td> <a href="#">редактировать </a></td>
+        {% endif %}
+        
+        
+    </tr>
+{% empty %}
+<p>Нет данных</p>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{%else%}
+<script>
+function redir() {
+    window.location.href="{% url 'django.contrib.auth.views.login' %}";
+}
+</script>
+
+<div class="row" align="center">
+Здравствуйте, для продолжения работы необходимо авторизоваться в системе.<br /><br />
+<center><button class="btn btn-info btn-lg" onclick="redir()">ВОЙТИ</button></center>
+</div>
+{% endif %}
+{% endblock %}

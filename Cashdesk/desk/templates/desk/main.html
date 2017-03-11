@@ -1,0 +1,163 @@
+{% load staticfiles %}
+<!DOCTYPE HTML />
+<html>
+<head>
+
+    <title>Gate12a - Cashdesk</title>
+    <meta charset="utf-8" />
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" ></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" ></script>
+
+    <style>
+        body {
+            padding-top:60px;
+            padding-left:50px;
+        }
+    </style>
+    <script type="text/javascript">
+        function refreshData() {
+            $.post(
+                    "/alloperations/",
+                    {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+                    function(data, status, xhr) {
+                        $("#operations").html(data);
+                    }
+                );
+        }
+        
+        function timer() {
+            refreshData();
+            setTimeout(function(){
+                timer();
+                }, 3000);
+
+        }
+        
+        $(function() {
+            setTimeout(function(){
+                timer();
+                }, 3000);
+        
+           
+        
+            $("#spent_amount").on('input', function (event) {
+                event.preventDefault();
+                var am = $("#spent_amount").val();
+                var numberRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+                if(!numberRegex.test(am) || am <= 0) {
+                    $("#spent-group").attr('class', 'form-group has-error');
+                }
+                else {
+                    $("#spent-group").attr('class', 'form-group');
+                }
+            });
+        
+            $("#income_amount").on('input', function (event) {
+                event.preventDefault();
+                var am = $("#income_amount").val();
+                var numberRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+                if(!numberRegex.test(am) || am <= 0) {
+                    $("#income-group").attr('class', 'form-group has-error');
+                }
+                else {
+                    $("#income-group").attr('class', 'form-group');
+                }
+            });
+        
+            $("#addincome").click(function(event){
+                event.preventDefault();
+                var am = $("#income_amount").val();
+                if(am <= 0 || !jQuery.isNumeric(am)) {
+                    return;
+                }
+                var comment = $("#income_comment").val();
+                $("#income_amount").val("0.0");
+                $("#income_comment").val("");
+                
+                $.post(
+                    "/addincome/",
+                    {"amount":am, "comment": comment,"csrfmiddlewaretoken": "{{ csrf_token }}"},
+                    function(data, status, xhr) {
+                        refreshData();
+                    }
+                );
+                return false;
+            });
+            
+            $("#addspent").click(function(event){
+                event.preventDefault();
+                var am = $("#spent_amount").val();
+                if(am <= 0 ||  !jQuery.isNumeric(am))
+                    return;
+                var comment = $("#spent_comment").val();
+                
+                $("#spent_amount").val("0.0");
+                $("#spent_comment").val("");
+                
+                $.post(
+                    "/addspent/",
+                    {"amount":am, "comment": comment,"csrfmiddlewaretoken": "{{ csrf_token }}"},
+                    function(data, status, xhr) {
+                        refreshData();
+                    }
+                );
+                return false;
+            });
+            
+            $('#archive_btn').on('click', function(e){
+                console.log('archive');
+                //e.preventDefault();
+                    $.post(
+                        "/archive/",
+                        {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+                        function(data, status, xhr) {
+                            refreshData();
+                        }
+                    );
+                //return false;
+            });
+            
+        });
+        
+        
+
+</script>
+</head>
+<body>
+<div class="container">
+<div align="right">Welcome, {{ user }} &nbsp;
+    {% if user.is_authenticated %}
+        <a href="{% url 'django.contrib.auth.views.logout_then_login' %}">Выйти</a><br />
+    {%endif%}
+
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Подтвержение</h4>
+      </div>
+      <div class="modal-body">
+        <p>Удалить данные и начать новый месяц?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="archive_btn">Да</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+</div>
+{% block content %}
+{% endblock %}
+
+</div>
+<span id="timer"></span>
+</body>
+</html>

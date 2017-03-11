@@ -1,0 +1,14 @@
+{% extends "desk/main.html" %}
+{% load has_group %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="row">
+<div class="col-md-12" align="center">
+<h2>Архивирование данных</h2>
+</div>
+</div>
+{% if user|in_group:"editors" %}
+
+{% endif %}
+
+{% endblock %}
