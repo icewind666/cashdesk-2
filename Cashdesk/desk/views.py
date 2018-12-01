@@ -6,14 +6,17 @@ from django.views.generic import ListView,DetailView, View
 from desk.models import FinancialOperation
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.template.context import RequestContext
+
 from django import template
-from django.contrib.auth.views import login, logout
+
+#from django.contrib.auth.views import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse_lazy
+#from django.core.urlresolvers import reverse_lazy
 from django.conf import settings
-from __builtin__ import False
+
+#from __builtin__ import False
 from desk.forms import DocumentForm
 
 
