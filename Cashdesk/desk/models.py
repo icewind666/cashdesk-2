@@ -2,6 +2,7 @@
 import json, sys, datetime
 from django.db import models
 
+
 class FinancialOperation(models.Model):
     positionNumber = models.BigIntegerField()
     whoPayed = models.TextField(max_length=1000)

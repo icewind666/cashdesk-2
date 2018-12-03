@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 import json, datetime, math
 from django.shortcuts import render, render_to_response, redirect
@@ -24,13 +24,13 @@ class FinancialOperationListView(ListView):
     model = FinancialOperation
 
     def get_queryset(self):
-        queryset = FinancialOperation.objects.order_by('-datetime')
+        queryset = FinancialOperation.objects.order_by('positionNumber')
         return queryset
-    
     
 
 class FinancialOperationDetailView(DetailView):
     model = FinancialOperation
+
 
 # used for ajax getting operations
 class AllOperationsView(View):
@@ -38,10 +38,8 @@ class AllOperationsView(View):
         context = RequestContext(request)
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.order_by('-datetime')
-                context_dict = {}    
-                context_dict['operations'] = operations
-                context_dict['form'] = DocumentForm()
+                operations = FinancialOperation.objects.order_by('positionNumber')
+                context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
                 print(e.__doc__)
@@ -50,26 +48,29 @@ class AllOperationsView(View):
         else:
             return HttpResponse('error')
 
-'''
- Checking if user has editors group
-'''
+
 class EditorGroupRequiredMixin(object):
+    """
+     Checking if user has editors group
+    """
     @method_decorator(user_passes_test(lambda u: u.groups.filter(name="editors").exists()))
     def dispatch(self, *args, **kwargs):
         return super(EditorGroupRequiredMixin, self).dispatch(*args, **kwargs)            
 
-'''
- Checking if user is admin(superuser)
-'''
+
 class AdminGroupRequiredMixin(object):
+    """
+     Checking if user is admin(superuser)
+    """
     @method_decorator(user_passes_test(lambda u: u.is_superuser))
     def dispatch(self, *args, **kwargs):
         return super(AdminGroupRequiredMixin, self).dispatch(*args, **kwargs)            
 
-'''
-Adding spent operation
-'''     
+
 def addrecord(request):
+    """
+    Adding spent operation
+    """
     if request.method == 'POST':
         try:
             form = DocumentForm(request.POST, request.FILES)
