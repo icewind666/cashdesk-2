@@ -112,18 +112,24 @@ LOGIN_URL = '/login/'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'filters': {
     },
     'handlers': {
       'console': {
             'class': 'logging.StreamHandler',
         },
+      'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'events.log',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False
         },
     }
 }
