@@ -1,32 +1,40 @@
 # coding: utf-8
 
-import json, datetime, math
-from django.shortcuts import render, render_to_response, redirect
-from django.views.generic import ListView,DetailView, View
+import datetime, logging
+from django.shortcuts import render_to_response
+from django.views.generic import ListView, DetailView, View
 from desk.models import FinancialOperation
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.template.context import RequestContext
-
-from django import template
-
-#from django.contrib.auth.views import login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
-from django.contrib.auth.models import User
-#from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
+from desk.forms import DocumentForm, EditDocumentForm
 
-#from __builtin__ import False
-from desk.forms import DocumentForm
+
+class GlobexView(ListView):
+    model = FinancialOperation
+    queryset = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
+
+
+class RelLccView(ListView):
+    template_name = "desk/operations_company_rel.html"
+    queryset = FinancialOperation.objects.filter(company=1).order_by('positionNumber')
+
+
+class GlobexExportView(ListView):
+    template_name = "desk/operations_company_export.html"
+    queryset = FinancialOperation.objects.filter(company=2).order_by('positionNumber')
+
+
+class PromelectronicaView(ListView):
+    template_name = "desk/operations_promelectronica.html"
+    queryset = FinancialOperation.objects.filter(company=3).order_by('positionNumber')
 
 
 class FinancialOperationListView(ListView):
-    model = FinancialOperation
+    #model = FinancialOperation
+    queryset = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
 
-    def get_queryset(self):
-        queryset = FinancialOperation.objects.order_by('positionNumber')
-        return queryset
-    
 
 class FinancialOperationDetailView(DetailView):
     model = FinancialOperation
@@ -35,10 +43,60 @@ class FinancialOperationDetailView(DetailView):
 # used for ajax getting operations
 class AllOperationsView(View):
     def post(self, request):
+        # logger = logging.getLogger(__name__)
+        # logger.info("ajax request start")
         context = RequestContext(request)
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.order_by('positionNumber')
+                operations = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
+                context_dict = {'operations': operations, 'form': DocumentForm()}
+                return render_to_response('desk/operations.html', context_dict, context)
+            except Exception as e:
+                print(e.__doc__)
+                print(e.message)
+                return HttpResponse('error')
+        else:
+            return HttpResponse('error')
+
+
+class AllOperationsRelView(View):
+    def post(self, request):
+        context = RequestContext(request)
+        if request.user.is_authenticated():
+            try:
+                operations = FinancialOperation.objects.filter(company=1).order_by('positionNumber')
+                context_dict = {'operations': operations, 'form': DocumentForm()}
+                return render_to_response('desk/operations.html', context_dict, context)
+            except Exception as e:
+                print(e.__doc__)
+                print(e.message)
+                return HttpResponse('error')
+        else:
+            return HttpResponse('error')
+
+
+class AllOperationsExportView(View):
+    def post(self, request):
+        context = RequestContext(request)
+        if request.user.is_authenticated():
+            try:
+                operations = FinancialOperation.objects.filter(company=2).order_by('positionNumber')
+                context_dict = {'operations': operations, 'form': DocumentForm()}
+                return render_to_response('desk/operations.html', context_dict, context)
+            except Exception as e:
+                print(e.__doc__)
+                print(e.message)
+                return HttpResponse('error')
+        else:
+            return HttpResponse('error')
+
+
+class AllOperationsElectroView(View):
+    def post(self, request):
+        context = RequestContext(request)
+        if request.user.is_authenticated():
+            try:
+                operations = FinancialOperation.objects.filter(company=3).order_by('positionNumber')
                 context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
@@ -75,37 +133,97 @@ def addrecord(request):
         try:
             form = DocumentForm(request.POST, request.FILES)
             if form.is_valid():
-                print 'we are here'
-                filOther = form.cleaned_data['fileLink']
-                fileUploaded = request.FILES['fileLink']
-                print request.FILES['fileLink']
+
+                file_uploaded = request.FILES['fileLink']
                 amount = request.POST["amount"]
-                print amount
-                positionNumber = request.POST["positionNumber"];
-                print positionNumber
-                whoPayed = request.POST["whoPayed"];
-                print whoPayed
-                alreadyPayed = request.POST["alreadyPayed"];
-                print alreadyPayed
-                isClosed = False
+                position_number = request.POST["positionNumber"]
+                who_payed = request.POST["whoPayed"]
+                already_payed = request.POST["alreadyPayed"]
+                company = request.POST["company"]
+                is_closed = False
                 
-                if amount == alreadyPayed:
-                    isClosed = True
+                if amount == already_payed:
+                    is_closed = True
                     
                 op = FinancialOperation()
                 op.amount = amount
-                op.positionNumber = positionNumber
-                op.isClosed = isClosed
-                op.whoPayed = whoPayed
-                op.alreadyPayed = alreadyPayed
+                op.positionNumber = position_number
+                op.isClosed = is_closed
+                op.whoPayed = who_payed
+                op.alreadyPayed = already_payed
                 op.datetime = datetime.datetime.now()
-                op.fileLink = fileUploaded
-                
-                #print op.toJSON()
-                
+                op.fileLink = file_uploaded
+                op.company = company
                 op.save()
-                
-            return HttpResponseRedirect('/');
+
+                if company == "0":
+                    return HttpResponseRedirect('/')
+                if company == "1":
+                    return HttpResponseRedirect('/rel_lcc/')
+                if company == "2":
+                    return HttpResponseRedirect('/globex_export/')
+                if company == "3":
+                    return HttpResponseRedirect('/promelectronica/')
+
+            else:
+                print('addform is not valid')
+            return HttpResponseRedirect('/')
+
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def edit_operation(request):
+    """
+    Edit spent operation
+    """
+    if request.method == 'POST':
+        try:
+            form = EditDocumentForm(request.POST, request.FILES)
+
+            if form.is_valid():
+                file_uploaded = ''
+                if 'op_file' in request.FILES:
+                    file_uploaded = request.FILES['op_file']
+
+                amount = request.POST["op_amount"].replace(',', '.')
+                position_number = request.POST["op_number"]
+                who_payed = request.POST["op_payer"]
+                already_payed = request.POST["op_alreadypayed"].replace(',', '.')
+                op_id = request.POST["op_id"]
+
+                if 'op_close' in request.POST:
+                    is_closed = request.POST["op_close"]
+                    if is_closed == "on":
+                        is_closed = True
+                    else:
+                        is_closed = False
+                else:
+                    is_closed = False
+
+                company = request.POST["op_company"]
+                op = FinancialOperation.objects.get(id=op_id)
+                op.amount = amount
+                op.positionNumber = position_number
+                op.isClosed = is_closed
+                op.whoPayed = who_payed
+                op.alreadyPayed = already_payed
+                op.fileLink = file_uploaded
+                op.company = company
+                op.save()
+
+                if company == "0":
+                    return HttpResponseRedirect('/')
+                if company == "1":
+                    return HttpResponseRedirect('/rel_lcc/')
+                if company == "2":
+                    return HttpResponseRedirect('/globex_export/')
+                if company == "3":
+                    return HttpResponseRedirect('/promelectronica/')
+            else:
+                print(form.errors)
+            return HttpResponseRedirect('/')
         except Exception as e:
             print(e.__doc__)
             print(e.message)

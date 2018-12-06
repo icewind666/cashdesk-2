@@ -6,13 +6,13 @@
 
 <ul class="nav nav-pills">
   {% if user|in_group:"readers_globex" %}
-  <li class="active"><a href="/">Globex</a></li>
+  <li ><a href="/">Globex</a></li>
   {% endif %}
   {% if user|in_group:"readers_rel_llc" %}
   <li><a href="/rel_lcc/">REL LLC</a></li>
   {% endif %}
   {% if user|in_group:"readers_globex_export" %}
-  <li><a href="/globex_export/">Globex export company</a></li>
+  <li class="active"><a href="/globex_export/">Globex export company</a></li>
   {% endif %}
   {% if user|in_group:"readers_promelectronica" %}
   <li><a href="/promelectronica/">Promelectronica</a></li>
@@ -20,11 +20,11 @@
 </ul>
 <br />
 <br />
-{% if user|in_group:"readers_globex" %}
+{% if user|in_group:"readers_globex_export" %}
 <script type="text/javascript">
     function refreshData() {
         $.post(
-                "/alloperations/",
+                "/alloperations_export/",
                 {"csrfmiddlewaretoken": "{{ csrf_token }}"},
                 function(data, status, xhr) {
                     $("#operations").html(data);
@@ -41,7 +41,7 @@
     }
 </script>
 
-{% if user|in_group:"editors_globex" %}
+{% if user|in_group:"editors_globex_export" %}
 <div class="col-sm-12">
     <form role="form" class="form-inline" method="post" enctype="multipart/form-data" action="/addrecord/">
       {% csrf_token %}
@@ -51,7 +51,7 @@
         <input type="text" class="form-control input-sm" placeholder="Плательщик" name="whoPayed"/>
         <input type="text" class="form-control input-sm" placeholder="Сумма" name="amount"/>
         <input type="text" class="form-control input-sm" placeholder="Оплачено" name="alreadyPayed"/>
-          <input type="hidden" name="company" value=0 />
+          <input type="hidden" name="company" value=2 />
           <br /><br />
         <input type="submit" class="btn btn-info btn-block" id="addrecord" value="Внести"/>
       </div>
@@ -159,7 +159,7 @@ $('#editFormSendBtn').on('click', function (event) {
         {% else %}
         <tr class="danger">
         {% endif %}
-        
+
         <td> {{ op.positionNumber }} </td>
         <td> <a href="/media/{{ op.fileLink }}">{{ op.fileLink }}</a> </td>
         <td> {{ op.whoPayed }} </td>
@@ -177,8 +177,8 @@ $('#editFormSendBtn').on('click', function (event) {
         {% else %}
         <td>&nbsp;</td>
         {% endif %}
-        
-        
+
+
     </tr>
 {% empty %}
 <p>Нет данных</p>

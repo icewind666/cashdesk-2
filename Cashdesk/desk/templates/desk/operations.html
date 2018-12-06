@@ -23,7 +23,15 @@
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
         {% if op.isClosed == 0 %}
-        <td> <a href="#">редактировать </a></td>
+        <td> <a href="" data-toggle="modal" data-target="#editModal"
+                data-opnumber="{{ op.positionNumber }}"
+                data-oppayer="{{ op.whoPayed }}"
+                data-opamount="{{ op.amount }}"
+                data-opalreadypayed="{{ op.alreadyPayed }}"
+                                data-opid="{{ op.id }}"
+                data-opcompany="{{ op.company}}"
+
+        >редактировать</a></td>
         {% endif %}
 
 
@@ -35,8 +43,5 @@
 </tbody>
 </table>
 <script type="text/javascript">
-    console.log("{{ remainder }}");
-    
     $("#remainder").html("{{ remainder }}");
-    
 </script>
