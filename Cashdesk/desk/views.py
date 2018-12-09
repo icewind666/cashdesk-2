@@ -13,27 +13,26 @@ from desk.forms import DocumentForm, EditDocumentForm
 
 class GlobexView(ListView):
     model = FinancialOperation
-    queryset = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
+    queryset = FinancialOperation.objects.filter(company=0).order_by('-positionNumber')
 
 
 class RelLccView(ListView):
     template_name = "desk/operations_company_rel.html"
-    queryset = FinancialOperation.objects.filter(company=1).order_by('positionNumber')
+    queryset = FinancialOperation.objects.filter(company=1).order_by('-positionNumber')
 
 
 class GlobexExportView(ListView):
     template_name = "desk/operations_company_export.html"
-    queryset = FinancialOperation.objects.filter(company=2).order_by('positionNumber')
+    queryset = FinancialOperation.objects.filter(company=2).order_by('-positionNumber')
 
 
 class PromelectronicaView(ListView):
     template_name = "desk/operations_promelectronica.html"
-    queryset = FinancialOperation.objects.filter(company=3).order_by('positionNumber')
+    queryset = FinancialOperation.objects.filter(company=3).order_by('-positionNumber')
 
 
 class FinancialOperationListView(ListView):
-    #model = FinancialOperation
-    queryset = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
+    queryset = FinancialOperation.objects.filter(company=0).order_by('-positionNumber')
 
 
 class FinancialOperationDetailView(DetailView):
@@ -43,12 +42,11 @@ class FinancialOperationDetailView(DetailView):
 # used for ajax getting operations
 class AllOperationsView(View):
     def post(self, request):
-        # logger = logging.getLogger(__name__)
-        # logger.info("ajax request start")
         context = RequestContext(request)
+
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.filter(company=0).order_by('positionNumber')
+                operations = FinancialOperation.objects.filter(company=0).order_by('-positionNumber')
                 context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
@@ -64,7 +62,7 @@ class AllOperationsRelView(View):
         context = RequestContext(request)
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.filter(company=1).order_by('positionNumber')
+                operations = FinancialOperation.objects.filter(company=1).order_by('-positionNumber')
                 context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
@@ -80,7 +78,7 @@ class AllOperationsExportView(View):
         context = RequestContext(request)
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.filter(company=2).order_by('positionNumber')
+                operations = FinancialOperation.objects.filter(company=2).order_by('-positionNumber')
                 context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
@@ -96,7 +94,7 @@ class AllOperationsElectroView(View):
         context = RequestContext(request)
         if request.user.is_authenticated():
             try:
-                operations = FinancialOperation.objects.filter(company=3).order_by('positionNumber')
+                operations = FinancialOperation.objects.filter(company=3).order_by('-positionNumber')
                 context_dict = {'operations': operations, 'form': DocumentForm()}
                 return render_to_response('desk/operations.html', context_dict, context)
             except Exception as e:
@@ -138,7 +136,12 @@ def addrecord(request):
                 amount = request.POST["amount"]
                 position_number = request.POST["positionNumber"]
                 who_payed = request.POST["whoPayed"]
-                already_payed = request.POST["alreadyPayed"]
+
+                already_payed = "0.0"
+                if "alreadyPayed" in request.POST:
+                    if request.POST["alreadyPayed"] != "":
+                        already_payed = request.POST["alreadyPayed"]
+
                 company = request.POST["company"]
                 is_closed = False
                 
@@ -209,7 +212,10 @@ def edit_operation(request):
                 op.isClosed = is_closed
                 op.whoPayed = who_payed
                 op.alreadyPayed = already_payed
-                op.fileLink = file_uploaded
+
+                if file_uploaded != '':
+                    op.fileLink = file_uploaded
+
                 op.company = company
                 op.save()
 
