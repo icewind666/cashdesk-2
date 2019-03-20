@@ -9,6 +9,7 @@ from django.template.context import RequestContext
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from desk.forms import DocumentForm, EditDocumentForm
+from django.db.models import F, Q
 
 
 class GlobexView(ListView):
@@ -29,6 +30,64 @@ class GlobexExportView(ListView):
 class PromelectronicaView(ListView):
     template_name = "desk/operations_promelectronica.html"
     queryset = FinancialOperation.objects.filter(company=3).order_by('-positionNumber')
+
+
+class PromsoldinvoicesView(ListView):
+    template_name = "desk/operations_prom_sold_invoices.html"
+    sort = {}
+
+    def get_context_data(self, **kwargs):
+        context = super(PromsoldinvoicesView, self).get_context_data(**kwargs)
+        print(context)
+        sort_order = self.request.GET["order"]
+        sort_field = self.request.GET["field"]
+        self.sort = {"field": sort_field, "order": sort_order}
+        context['field'] = self.sort['field']
+        context['order'] = self.sort['order']
+        context.update({'field': self.sort['field'], 'order': self.sort['order']})
+        return context
+
+    def get_queryset(self):
+
+        if "field" in self.request.GET and "order" in self.request.GET:
+            # sorted
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+            self.sort = {"field": sort_field, "order": sort_order}
+            result_sort_order_sign = ""
+
+            if sort_field != "alreadyPayed":
+                # usual sort here
+                if sort_order == "asc":
+                    result_sort_order_sign += ""
+                else:
+                    result_sort_order_sign = "-"
+
+                result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+                queryset = FinancialOperation.objects.filter(company=4
+                                                             ).order_by(result_sort_expr)
+            else:
+                # custom sort for already payed field
+                if sort_order == "1":
+                    # mode 1: unpayed
+                    queryset = FinancialOperation.objects.filter(company=4).filter(
+                        alreadyPayed=0.0).order_by("-positionNumber")
+
+                if sort_order == "2":
+                    # mode 2: partically payed
+                    queryset = FinancialOperation.objects.filter(company=4).filter(
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by("-positionNumber")
+
+                if sort_order == "3":
+                    # mode 3: payed
+                    queryset = FinancialOperation.objects.filter(company=4).filter(
+                        alreadyPayed=F("amount")).order_by("-positionNumber")
+
+        else:
+            # unsorted
+            queryset = FinancialOperation.objects.filter(company=4
+                                                         ).order_by('-positionNumber')
+        return queryset
 
 
 class FinancialOperationListView(ListView):
@@ -105,22 +164,40 @@ class AllOperationsElectroView(View):
             return HttpResponse('error')
 
 
+class AllOperationsPromSoldInvoicesView(View):
+    def post(self, request):
+        context = RequestContext(request)
+        if request.user.is_authenticated():
+            try:
+                operations = FinancialOperation.objects.filter(company=4).order_by('-positionNumber')
+                context_dict = {'operations': operations, 'form': DocumentForm()}
+                return render_to_response('desk/operations.html', context_dict, context)
+            except Exception as e:
+                print(e.__doc__)
+                print(e.message)
+                return HttpResponse('error')
+        else:
+            return HttpResponse('error')
+
+
 class EditorGroupRequiredMixin(object):
     """
      Checking if user has editors group
     """
+
     @method_decorator(user_passes_test(lambda u: u.groups.filter(name="editors").exists()))
     def dispatch(self, *args, **kwargs):
-        return super(EditorGroupRequiredMixin, self).dispatch(*args, **kwargs)            
+        return super(EditorGroupRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 class AdminGroupRequiredMixin(object):
     """
      Checking if user is admin(superuser)
     """
+
     @method_decorator(user_passes_test(lambda u: u.is_superuser))
     def dispatch(self, *args, **kwargs):
-        return super(AdminGroupRequiredMixin, self).dispatch(*args, **kwargs)            
+        return super(AdminGroupRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 def addrecord(request):
@@ -144,10 +221,10 @@ def addrecord(request):
 
                 company = request.POST["company"]
                 is_closed = False
-                
+
                 if amount == already_payed:
                     is_closed = True
-                    
+
                 op = FinancialOperation()
                 op.amount = amount
                 op.positionNumber = position_number
@@ -167,6 +244,8 @@ def addrecord(request):
                     return HttpResponseRedirect('/globex_export/')
                 if company == "3":
                     return HttpResponseRedirect('/promelectronica/')
+                if company == "4":
+                    return HttpResponseRedirect('/promsoldinvoices/')
 
             else:
                 print('addform is not valid')
@@ -227,10 +306,12 @@ def edit_operation(request):
                     return HttpResponseRedirect('/globex_export/')
                 if company == "3":
                     return HttpResponseRedirect('/promelectronica/')
+                if company == "4":
+                    return HttpResponseRedirect('/promsoldinvoices/')
+
             else:
                 print(form.errors)
             return HttpResponseRedirect('/')
         except Exception as e:
             print(e.__doc__)
             print(e.message)
-
