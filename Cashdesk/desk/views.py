@@ -38,13 +38,15 @@ class PromsoldinvoicesView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(PromsoldinvoicesView, self).get_context_data(**kwargs)
-        print(context)
-        sort_order = self.request.GET["order"]
-        sort_field = self.request.GET["field"]
-        self.sort = {"field": sort_field, "order": sort_order}
-        context['field'] = self.sort['field']
-        context['order'] = self.sort['order']
-        context.update({'field': self.sort['field'], 'order': self.sort['order']})
+
+        if "order" in self.request.GET and "field" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+            self.sort = {"field": sort_field, "order": sort_order}
+            context['field'] = self.sort['field']
+            context['order'] = self.sort['order']
+            context.update({'field': self.sort['field'], 'order': self.sort['order']})
+
         return context
 
     def get_queryset(self):

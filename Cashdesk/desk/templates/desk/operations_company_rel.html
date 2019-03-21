@@ -17,6 +17,10 @@
   {% if user|in_group:"readers_promelectronica" %}
   <li><a href="/promelectronica/">Promelectronica</a></li>
   {% endif %}
+  {% if user|in_group:"readers_promsoldinvoices" %}
+  <li><a href="/promsoldinvoices/">Prom sold invoices</a></li>
+  {% endif %}
+
 </ul>
 <br />
 <br />

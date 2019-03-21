@@ -17,13 +17,13 @@
   {% if user|in_group:"readers_promelectronica" %}
   <li><a href="/promelectronica/">Promelectronica</a></li>
   {% endif %}
-  {% if user|in_group:"readers_promelectronica" %}
+  {% if user|in_group:"readers_promsoldinvoices" %}
   <li class="active"><a href="/promsoldinvoices/">Prom sold invoices</a></li>
   {% endif %}
 </ul>
 <br />
 <br />
-{% if user|in_group:"readers_promelectronica" %}
+{% if user|in_group:"readers_promsoldinvoices" %}
 <script type="text/javascript">
     function refreshData() {
         $.post(
@@ -44,7 +44,7 @@
     }
 </script>
 
-{% if user|in_group:"editors_promelectronica" %}
+{% if user|in_group:"editors_promsoldinvoices" %}
 <div class="col-sm-12">
     <form role="form" class="form-inline" method="post" enctype="multipart/form-data" action="/addrecord/">
       {% csrf_token %}
