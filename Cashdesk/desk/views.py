@@ -42,51 +42,67 @@ class PromsoldinvoicesView(ListView):
         if "order" in self.request.GET and "field" in self.request.GET:
             sort_order = self.request.GET["order"]
             sort_field = self.request.GET["field"]
+
             self.sort = {"field": sort_field, "order": sort_order}
-            context['field'] = self.sort['field']
-            context['order'] = self.sort['order']
-            context.update({'field': self.sort['field'], 'order': self.sort['order']})
+
+            context["field"] = self.sort["field"]
+            context["order"] = self.sort["order"]
+
+            if "grouping" in self.request.GET:
+                context.update({"field": self.sort["field"],
+                                "grouping": self.request.GET["grouping"],
+                                "order": self.sort["order"]})
+            else:
+                context.update({"field": self.sort["field"], "order": self.sort["order"]})
 
         return context
 
     def get_queryset(self):
-
         if "field" in self.request.GET and "order" in self.request.GET:
-            # sorted
             sort_order = self.request.GET["order"]
             sort_field = self.request.GET["field"]
+
             self.sort = {"field": sort_field, "order": sort_order}
+
             result_sort_order_sign = ""
 
-            if sort_field != "alreadyPayed":
-                # usual sort here
-                if sort_order == "asc":
-                    result_sort_order_sign += ""
-                else:
-                    result_sort_order_sign = "-"
+            # usual sort here
+            if sort_order == "asc":
+                result_sort_order_sign += ""
+            else:
+                result_sort_order_sign = "-"
 
-                result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+            result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+
+            if sort_field != "alreadyPayed":
                 queryset = FinancialOperation.objects.filter(company=4
                                                              ).order_by(result_sort_expr)
             else:
                 # custom sort for already payed field
+                if "grouping" in self.request.GET:
+                    ex_field = self.request.GET["grouping"]
+                else:
+                    ex_field = "positionNumber"
+
+                ex_field_sort_expr = "{}".format(ex_field)
+
                 if sort_order == "1":
                     # mode 1: unpayed
                     queryset = FinancialOperation.objects.filter(company=4).filter(
-                        alreadyPayed=0.0).order_by("-positionNumber")
+                        alreadyPayed=0.0).order_by(ex_field_sort_expr)
 
                 if sort_order == "2":
                     # mode 2: partically payed
                     queryset = FinancialOperation.objects.filter(company=4).filter(
-                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by("-positionNumber")
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
 
                 if sort_order == "3":
                     # mode 3: payed
                     queryset = FinancialOperation.objects.filter(company=4).filter(
-                        alreadyPayed=F("amount")).order_by("-positionNumber")
+                        alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
 
         else:
-            # unsorted
+            # unsorted. default sort is by positionNumber
             queryset = FinancialOperation.objects.filter(company=4
                                                          ).order_by('-positionNumber')
         return queryset

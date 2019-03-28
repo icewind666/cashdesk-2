@@ -25,7 +25,43 @@
 <br />
 {% if user|in_group:"readers_promsoldinvoices" %}
 <script type="text/javascript">
+    function applyGrouping() {
+        var url_string = window.location.href;
+        var url = new URL(url_string);
+        var field = url.searchParams.get("field");
+        var order = url.searchParams.get("order");
+
+        if (field == null || order == null) {
+            return;
+        }
+
+        selectedGroupingField = $("#groupingControl").val();
+        redirectUrl = "?field="+field+"&order="+order;
+
+        if (selectedGroupingField != "nothing") {
+            redirectUrl += "&grouping="+selectedGroupingField;
+        }
+
+        window.location.href = redirectUrl;
+        return true;
+    }
+
+    function cancelAllOrder() {
+        window.location.href = "?";
+    }
+
+
     function refreshData() {
+        var url_string = window.location.href;
+        var url = new URL(url_string);
+        var field = url.searchParams.get("field");
+        var ex_field = url.searchParams.get("ex_field");
+        var order = url.searchParams.get("order");
+
+        console.log("field =" + field);
+        console.log("ex_field =" + ex_field);
+        console.log("order =" + order);
+
         $.post(
                 "/alloperations_sold/",
                 {"csrfmiddlewaretoken": "{{ csrf_token }}"},
@@ -143,6 +179,31 @@ $('#editFormSendBtn').on('click', function (event) {
 
 <!-- content of below div is replaced with ajax calls -->
 <div id="operations">
+<div id="grouping" class="float-right">
+{% if field == "alreadyPayed" %}
+
+    Группировка:
+    <select id="groupingControl">
+        <option value="nothing">-----</option>
+        <option value="whoPayed"
+        {% if grouping == "whoPayed" %} selected {% endif %}
+        >Плательщик</option>
+        <option value="amount"
+        {% if grouping == "amount" %} selected {% endif %}
+        >Сумма</option>
+        <option value="fileLink"
+        {% if grouping == "fileLink" %} selected {% endif %}
+        >Файл</option>
+        <option value="alreadyPayed"
+        {% if grouping == "alreadyPayed" %} selected {% endif %}
+        >Оплачено</option>
+    </select>
+    <button class=".btn-default" onclick="applyGrouping();">Применить</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{% endif %}
+    <button class=".btn-default" onclick="cancelAllOrder();">Вернуться к полному списку</button>
+</div>
+<br />
 
 <table class="table table-hover table-bordered">
     <thead>
@@ -259,7 +320,6 @@ $('#editFormSendBtn').on('click', function (event) {
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
-        {% if op.isClosed == 0 %}
         <td title="Редактировать"> <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
                 data-opnumber="{{ op.positionNumber }}"
                 data-oppayer="{{ op.whoPayed }}"
@@ -268,10 +328,7 @@ $('#editFormSendBtn').on('click', function (event) {
                 data-opid="{{ op.id }}"
                 data-opcompany="{{ op.company}}"
         ><span class="glyphicon glyphicon-edit"></span> </a></td>
-        {% else %}
-        <td>&nbsp;</td>
-        {% endif %}
-        
+
         
     </tr>
 {% empty %}
