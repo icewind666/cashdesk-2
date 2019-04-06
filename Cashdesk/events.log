@@ -740,3 +740,4 @@ Traceback (most recent call last):
   File "/usr/local/lib/python2.7/site-packages/django/db/models/sql/query.py", line 1330, in names_to_path
     "Choices are: %s" % (name, ", ".join(available)))
 FieldError: Cannot resolve keyword 'nothing' into field. Choices are: alreadyPayed, amount, company, datetime, fileLink, id, isClosed, positionNumber, whoPayed
+Not Found: /favicon.ico
