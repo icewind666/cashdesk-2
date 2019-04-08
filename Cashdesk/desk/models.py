@@ -4,7 +4,8 @@ from django.db import models
 
 
 class FinancialOperation(models.Model):
-    positionNumber = models.TextField(max_length=50)
+    positionNumberPromSold = models.TextField(max_length=50, default='')
+    positionNumber = models.BigIntegerField()
     whoPayed = models.TextField(max_length=1000)
     fileLink = models.FileField(upload_to='documents/%Y/%m/%d', blank=True)
     datetime = models.DateTimeField(u'Дата')

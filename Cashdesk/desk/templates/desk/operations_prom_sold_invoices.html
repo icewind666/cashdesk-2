@@ -209,20 +209,20 @@ $('#editFormSendBtn').on('click', function (event) {
     <thead>
         <tr>
             <td>Номер&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {% if field == "positionNumber" %}
+                {% if field == "positionNumberPromSold" %}
                     {% if order == "asc" %}
-                        <a href="/promsoldinvoices/?field=positionNumber&order=desc">
+                        <a href="/promsoldinvoices/?field=positionNumberPromSold&order=desc">
                             <span style="color:red;">
                                 <span class="glyphicon glyphicon-sort-by-attributes"></span>
                     {% else %}
-                        <a href="/promsoldinvoices/?field=positionNumber&order=asc">
+                        <a href="/promsoldinvoices/?field=positionNumberPromSold&order=asc">
                             <span style="color:red;">
                                 <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
                     {% endif %}
                     </span>
                     </a>
                 {% else %}
-                    <a href="/promsoldinvoices/?field=positionNumber&order=asc">
+                    <a href="/promsoldinvoices/?field=positionNumberPromSold&order=asc">
                     <span class="glyphicon glyphicon-sort-by-attributes"></span>
                 {% endif %}
                 </a>
@@ -315,13 +315,13 @@ $('#editFormSendBtn').on('click', function (event) {
         <tr class="danger">
         {% endif %}
 
-        <td> {{ op.positionNumber }}</td>
+        <td> {{ op.positionNumberPromSold }}</td>
         <td> <a href="/media/{{ op.fileLink }}">{{ op.fileLink }}</a> </td>
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
         <td title="Редактировать"> <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
-                data-opnumber="{{ op.positionNumber }}"
+                data-opnumber="{{ op.positionNumberPromSold }}"
                 data-oppayer="{{ op.whoPayed }}"
                 data-opamount="{{ op.amount }}"
                 data-opalreadypayed="{{ op.alreadyPayed }}"

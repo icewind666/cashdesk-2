@@ -12,6 +12,20 @@ from desk.forms import DocumentForm, EditDocumentForm
 from django.db.models import F, Q
 
 
+class Converter(View):
+    def get(self, request):
+        if request.user.is_authenticated():
+            all_operations = FinancialOperation.objects.all()
+            for op in all_operations:
+                try:
+                    op.positionNumberPromSold = str(op.positionNumber)
+                    print("Converting {} -> {}".format(op.positionNumberPromSold, op.positionNumber))
+                    op.save()
+                except Exception as e:
+                    pass
+            return HttpResponse('all done')
+
+
 class GlobexView(ListView):
     model = FinancialOperation
     queryset = FinancialOperation.objects.filter(company=0).order_by('-positionNumber')
@@ -82,7 +96,7 @@ class PromsoldinvoicesView(ListView):
                 if "grouping" in self.request.GET:
                     ex_field = self.request.GET["grouping"]
                 else:
-                    ex_field = "positionNumber"
+                    ex_field = "positionNumberPromSold"
 
                 ex_field_sort_expr = "{}".format(ex_field)
 
@@ -104,7 +118,7 @@ class PromsoldinvoicesView(ListView):
         else:
             # unsorted. default sort is by positionNumber
             queryset = FinancialOperation.objects.filter(company=4
-                                                         ).order_by('-positionNumber')
+                                                         ).order_by('-positionNumberPromSold')
         return queryset
 
 
@@ -245,7 +259,12 @@ def addrecord(request):
 
                 op = FinancialOperation()
                 op.amount = amount
-                op.positionNumber = position_number
+                if company == "4":
+                    op.positionNumberPromSold = position_number
+                    op.positionNumber = 0
+                else:
+                    op.positionNumber = position_number
+
                 op.isClosed = is_closed
                 op.whoPayed = who_payed
                 op.alreadyPayed = already_payed
@@ -305,7 +324,11 @@ def edit_operation(request):
                 company = request.POST["op_company"]
                 op = FinancialOperation.objects.get(id=op_id)
                 op.amount = amount
-                op.positionNumber = position_number
+                if company == "4":
+                    op.positionNumberPromSold = position_number
+                    op.positionNumber = 0
+                else:
+                    op.positionNumber = position_number
                 op.isClosed = is_closed
                 op.whoPayed = who_payed
                 op.alreadyPayed = already_payed

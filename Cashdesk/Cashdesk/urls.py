@@ -3,7 +3,7 @@ from django.contrib import admin
 from desk.views import FinancialOperationListView, \
     AllOperationsView, AllOperationsRelView, addrecord, edit_operation, GlobexView, \
     RelLccView, GlobexExportView, PromelectronicaView, AllOperationsExportView,\
-    AllOperationsElectroView, PromsoldinvoicesView,AllOperationsPromSoldInvoicesView
+    AllOperationsElectroView, PromsoldinvoicesView,AllOperationsPromSoldInvoicesView,Converter
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -25,5 +25,6 @@ urlpatterns = [
     url(r'^alloperations_electro/$', AllOperationsElectroView.as_view(), name='alloperations_electro'),
     url(r'^alloperations_sold/$', AllOperationsPromSoldInvoicesView.as_view(), name='alloperations_sold'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^migrate/$', Converter.as_view(), name='converter'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
