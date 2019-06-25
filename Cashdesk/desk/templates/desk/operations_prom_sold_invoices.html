@@ -58,10 +58,6 @@
         var ex_field = url.searchParams.get("ex_field");
         var order = url.searchParams.get("order");
 
-        console.log("field =" + field);
-        console.log("ex_field =" + ex_field);
-        console.log("order =" + order);
-
         $.post(
                 "/alloperations_sold/",
                 {"csrfmiddlewaretoken": "{{ csrf_token }}"},
@@ -84,15 +80,16 @@
 <div class="col-sm-12">
     <form role="form" class="form-inline" method="post" enctype="multipart/form-data" action="/addrecord/">
       {% csrf_token %}
-      <div class="form-group" id="income-group" name="income-group" >
-      <input type="text" class="form-control input-sm" placeholder="Номер" name="positionNumber" id="positionNumber"/>
-      <input type="file" class="form-control input-sm" placeholder="Файл" id="fileLink" name="fileLink" />
-        <input type="text" class="form-control input-sm" placeholder="Плательщик" name="whoPayed"/>
-        <input type="text" class="form-control input-sm" placeholder="Сумма" name="amount"/>
-        <input type="text" class="form-control input-sm" placeholder="Оплачено" name="alreadyPayed"/>
+      <div class="form-group" id="income-group">
+          <input type="text" class="form-control input-sm" placeholder="Финансовый год/штат" name="positionNumberSold" id="positionNumberSold"/>
+          <input type="text" class="form-control input-sm" placeholder="Номер" name="positionNumber" id="positionNumber"/>
+          <input type="file" class="form-control input-sm" placeholder="Файл" id="fileLink" name="fileLink" />
+          <input type="text" class="form-control input-sm" placeholder="Плательщик" name="whoPayed"/>
+          <input type="text" class="form-control input-sm" placeholder="Сумма" name="amount"/>
+          <input type="text" class="form-control input-sm" placeholder="Оплачено" name="alreadyPayed"/>
           <input type="hidden" name="company" value=4 />
           <br /><br />
-        <input type="submit" class="btn btn-info btn-block" id="addrecord" value="Внести"/>
+          <input type="submit" class="btn btn-info btn-block" id="addrecord" value="Внести"/>
       </div>
     </form>
 </div>
@@ -111,6 +108,10 @@
       <div class="modal-body">
         <form id="editForm" method='POST' action='/edit_operation/' enctype="multipart/form-data">
             {% csrf_token %}
+          <div class="form-group">
+            <label for="op_number_sold" class="col-form-label">Финансовый год/штат:</label>
+            <input type="text" class="form-control" id="op_number_sold" name="op_number_sold">
+          </div>
           <div class="form-group">
             <label for="op_number" class="col-form-label">Номер:</label>
             <input type="text" class="form-control" id="op_number" name="op_number">
@@ -153,6 +154,7 @@
 $('#editModal').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget);
   var opnumber = button.data('opnumber');
+  var opnumber_sold = button.data('opnumbersold');
   var oppayer = button.data('oppayer');
   var opamount = button.data('opamount');
   var opalreadypayed = button.data('opalreadypayed');
@@ -166,6 +168,7 @@ $('#editModal').on('show.bs.modal', function (event) {
   modal.find('#op_alreadypayed').val(opalreadypayed);
   modal.find('#op_id').val(opid);
   modal.find('#op_company').val(opcompany);
+  modal.find('#op_number_sold').val(opnumber_sold);
 });
 
 
@@ -208,7 +211,7 @@ $('#editFormSendBtn').on('click', function (event) {
 <table class="table table-hover table-bordered">
     <thead>
         <tr>
-            <td>Номер&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <td>Финансовый год/штат&nbsp;
                 {% if field == "positionNumberPromSold" %}
                     {% if order == "asc" %}
                         <a href="/promsoldinvoices/?field=positionNumberPromSold&order=desc">
@@ -229,6 +232,28 @@ $('#editFormSendBtn').on('click', function (event) {
 
                 <!--<span class="glyphicon glyphicon-sort-by-attributes-alt"></span>-->
             </td>
+            <td>Номер&nbsp;
+                {% if field == "positionNumber" %}
+                    {% if order == "asc" %}
+                        <a href="/promsoldinvoices/?field=positionNumber&order=desc">
+                            <span style="color:red;">
+                                <span class="glyphicon glyphicon-sort-by-attributes"></span>
+                    {% else %}
+                        <a href="/promsoldinvoices/?field=positionNumber&order=asc">
+                            <span style="color:red;">
+                                <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                    {% endif %}
+                    </span>
+                    </a>
+                {% else %}
+                    <a href="/promsoldinvoices/?field=positionNumber&order=asc">
+                    <span class="glyphicon glyphicon-sort-by-attributes"></span>
+                {% endif %}
+                </a>
+
+                <!--<span class="glyphicon glyphicon-sort-by-attributes-alt"></span>-->
+            </td>
+
             <td>Файл</td>
             <td>Плательщик&nbsp;&nbsp;
                 {% if field == "whoPayed" %}
@@ -269,7 +294,7 @@ $('#editFormSendBtn').on('click', function (event) {
                 {% endif %}
                 </a>
             </td>
-            <td>Оплачено
+            <td>Оплачено<br/>
                     {% if field == "alreadyPayed" and order == "3" %}
                     <a href="/promsoldinvoices/?field=alreadyPayed&order=3">
                             <span style="color:red;">
@@ -316,18 +341,25 @@ $('#editFormSendBtn').on('click', function (event) {
         {% endif %}
 
         <td> {{ op.positionNumberPromSold }}</td>
+        <td> {{ op.positionNumber }}</td>
         <td> <a href="/media/{{ op.fileLink }}">{{ op.fileLink }}</a> </td>
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
-        <td title="Редактировать"> <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
-                data-opnumber="{{ op.positionNumberPromSold }}"
+
+        <td title="Редактировать">
+            {% if user|in_group:"editors_promsoldinvoices" %}
+            <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
+                data-opnumber="{{ op.positionNumber }}"
+              data-opnumbersold="{{ op.positionNumberPromSold }}"
                 data-oppayer="{{ op.whoPayed }}"
                 data-opamount="{{ op.amount }}"
                 data-opalreadypayed="{{ op.alreadyPayed }}"
                 data-opid="{{ op.id }}"
                 data-opcompany="{{ op.company}}"
-        ><span class="glyphicon glyphicon-edit"></span> </a></td>
+        ><span class="glyphicon glyphicon-edit"></span> </a>
+            {% endif %}
+        </td>
 
         
     </tr>

@@ -14,16 +14,7 @@ from django.db.models import F, Q
 
 class Converter(View):
     def get(self, request):
-        if request.user.is_authenticated():
-            all_operations = FinancialOperation.objects.all()
-            for op in all_operations:
-                try:
-                    op.positionNumberPromSold = str(op.positionNumber)
-                    print("Converting {} -> {}".format(op.positionNumberPromSold, op.positionNumber))
-                    op.save()
-                except Exception as e:
-                    pass
-            return HttpResponse('all done')
+        pass
 
 
 class GlobexView(ListView):
@@ -118,7 +109,7 @@ class PromsoldinvoicesView(ListView):
         else:
             # unsorted. default sort is by positionNumber
             queryset = FinancialOperation.objects.filter(company=4
-                                                         ).order_by('-positionNumberPromSold')
+                                                         ).order_by('-positionNumberPromSold', '-positionNumber')
         return queryset
 
 
@@ -260,8 +251,8 @@ def addrecord(request):
                 op = FinancialOperation()
                 op.amount = amount
                 if company == "4":
-                    op.positionNumberPromSold = position_number
-                    op.positionNumber = 0
+                    op.positionNumberPromSold = request.POST["positionNumberSold"]
+                    op.positionNumber = position_number
                 else:
                     op.positionNumber = position_number
 
@@ -325,8 +316,8 @@ def edit_operation(request):
                 op = FinancialOperation.objects.get(id=op_id)
                 op.amount = amount
                 if company == "4":
-                    op.positionNumberPromSold = position_number
-                    op.positionNumber = 0
+                    op.positionNumberPromSold = request.POST["op_number_sold"]
+                    op.positionNumber = position_number
                 else:
                     op.positionNumber = position_number
                 op.isClosed = is_closed
