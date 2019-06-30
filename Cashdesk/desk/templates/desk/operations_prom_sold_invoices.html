@@ -229,8 +229,6 @@ $('#editFormSendBtn').on('click', function (event) {
                     <span class="glyphicon glyphicon-sort-by-attributes"></span>
                 {% endif %}
                 </a>
-
-                <!--<span class="glyphicon glyphicon-sort-by-attributes-alt"></span>-->
             </td>
             <td>Номер&nbsp;
                 {% if field == "positionNumber" %}
@@ -250,8 +248,6 @@ $('#editFormSendBtn').on('click', function (event) {
                     <span class="glyphicon glyphicon-sort-by-attributes"></span>
                 {% endif %}
                 </a>
-
-                <!--<span class="glyphicon glyphicon-sort-by-attributes-alt"></span>-->
             </td>
 
             <td>Файл</td>
@@ -327,7 +323,6 @@ $('#editFormSendBtn').on('click', function (event) {
                         <span class="glyphicon glyphicon-remove"></span>
                     {% endif %}
                     </a>
-
             </td>
             <td>&nbsp;</td>
         </tr>
@@ -337,7 +332,7 @@ $('#editFormSendBtn').on('click', function (event) {
         {% if op.isClosed == 1 %}
             <tr class="success">
         {% else %}
-        <tr class="danger">
+            <tr class="danger">
         {% endif %}
 
         <td> {{ op.positionNumberPromSold }}</td>
@@ -347,28 +342,47 @@ $('#editFormSendBtn').on('click', function (event) {
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
 
-        <td title="Редактировать">
-            {% if user|in_group:"editors_promsoldinvoices" %}
-            <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
-                data-opnumber="{{ op.positionNumber }}"
-              data-opnumbersold="{{ op.positionNumberPromSold }}"
-                data-oppayer="{{ op.whoPayed }}"
-                data-opamount="{{ op.amount }}"
-                data-opalreadypayed="{{ op.alreadyPayed }}"
-                data-opid="{{ op.id }}"
-                data-opcompany="{{ op.company}}"
-        ><span class="glyphicon glyphicon-edit"></span> </a>
+        <td width="8%">
+            {% if op.isClosed == 0 %}
+                {% if user|in_group:"editors_promsoldinvoices" %}
+                    <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
+                        data-opnumber="{{ op.positionNumber }}"
+                      data-opnumbersold="{{ op.positionNumberPromSold }}"
+                        data-oppayer="{{ op.whoPayed }}"
+                        data-opamount="{{ op.amount }}"
+                        data-opalreadypayed="{{ op.alreadyPayed }}"
+                        data-opid="{{ op.id }}"
+                        data-opcompany="{{ op.company}}"
+                    ><span class="glyphicon glyphicon-edit"></span> </a>
+                {% endif %}
+            {% else %}
+                {% if user|in_group:"editors_closed_promsoldinvoices" %}
+                    <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
+                        data-opnumber="{{ op.positionNumber }}"
+                      data-opnumbersold="{{ op.positionNumberPromSold }}"
+                        data-oppayer="{{ op.whoPayed }}"
+                        data-opamount="{{ op.amount }}"
+                        data-opalreadypayed="{{ op.alreadyPayed }}"
+                        data-opid="{{ op.id }}"
+                        data-opcompany="{{ op.company}}"
+                    ><span class="glyphicon glyphicon-edit"></span> </a>
+                {% endif %}
+
+            {% endif %}
+            {% if user|in_group:"removers_promsold" %}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+                <a title="Удалить" href="/promsoldinvoices/remove/?id={{op.id}}">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
             {% endif %}
         </td>
-
-        
     </tr>
 {% empty %}
-<p>Нет данных</p>
+    <p>Нет данных</p>
 {% endfor %}
-</tbody>
-</table>
-</div>
+    </tbody>
+    </table>
+    </div>
 {% endif %}
 {%else%}
 <script>

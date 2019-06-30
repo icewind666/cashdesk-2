@@ -148,11 +148,84 @@ $('#editFormSendBtn').on('click', function (event) {
 <table class="table table-hover table-bordered">
     <thead>
         <tr>
-            <td>Номер</td>
+            <td>
+            {% if field == "positionNumber" %}
+                {% if order == "asc" %}
+                    <a href="/globex/?field=positionNumber&order=desc">
+                        <span style="color:red;">
+                            <span class="glyphicon glyphicon-sort-by-attributes"></span>
+                {% else %}
+                    <a href="/globex/?field=positionNumber&order=asc">
+                        <span style="color:red;">
+                            <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                {% endif %}
+                </span>
+                </a>
+            {% else %}
+                <a href="/globex/?field=positionNumber&order=asc">
+                <span class="glyphicon glyphicon-sort-by-attributes"></span>
+            {% endif %}
+            </a>
+
+
+                Номер</td>
             <td>Файл</td>
             <td>Плательщик</td>
-            <td>Сумма</td>
-            <td>Оплачено</td>
+            <td>
+            {% if field == "amount" %}
+                {% if order == "asc" %}
+                    <a href="/globex/?field=amount&order=desc">
+                        <span style="color:red;">
+                            <span class="glyphicon glyphicon-sort-by-attributes"></span>
+                {% else %}
+                    <a href="/globex/?field=amount&order=asc">
+                        <span style="color:red;">
+                            <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                {% endif %}
+                </span>
+                </a>
+            {% else %}
+                <a href="/globex/?field=amount&order=asc">
+                <span class="glyphicon glyphicon-sort-by-attributes"></span>
+            {% endif %}
+            </a>
+
+
+                Сумма</td>
+            <td>
+                    {% if field == "alreadyPayed" and order == "3" %}
+                    <a href="/globex/?field=alreadyPayed&order=3">
+                            <span style="color:red;">
+                                <span class="glyphicon glyphicon-ok"></span>
+                            </span>
+                    {% else %}
+                        <a href="/globex/?field=alreadyPayed&order=3">
+                            <span class="glyphicon glyphicon-ok"></span>
+                    {% endif %}
+                    </a>
+
+                    <a href="/globex/?field=alreadyPayed&order=2">
+                    {% if field == "alreadyPayed" and order == "2" %}
+                            <span style="color:red;">
+                                <span class="glyphicon glyphicon-warning-sign"></span>
+                            </span>
+                    {% else %}
+                            <span class="glyphicon glyphicon-warning-sign"></span>
+                    {% endif %}
+                    </a>
+
+
+                    {% if field == "alreadyPayed" and order == "1" %}
+                        <a href="/globex/?field=alreadyPayed&order=1">
+                            <span style="color:red;">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </span>
+                    {% else %}
+                        <a href="/globex/?field=alreadyPayed&order=1">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    {% endif %}
+                    </a>
+                Оплачено</td>
             <td>&nbsp;</td>
         </tr>
     </thead>
@@ -169,19 +242,41 @@ $('#editFormSendBtn').on('click', function (event) {
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
+        <td>
         {% if op.isClosed == 0 %}
-        <td title="Редактировать"> <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
+            {% if user|in_group:"editors_globex" %}
+            <a href="" data-toggle="modal" data-target="#editModal"
                 data-opnumber="{{ op.positionNumber }}"
                 data-oppayer="{{ op.whoPayed }}"
                 data-opamount="{{ op.amount }}"
                 data-opalreadypayed="{{ op.alreadyPayed }}"
                 data-opid="{{ op.id }}"
-                data-opcompany="{{ op.company}}"
-        ><span class="glyphicon glyphicon-edit"></span> </a></td>
+                data-opcompany="{{ op.company}}">
+                <span class="glyphicon glyphicon-edit"></span>
+            </a>
+            {% endif %}
         {% else %}
-        <td>&nbsp;</td>
+            {% if user|in_group:"editors_closed_globex" %}
+                <a href="" data-toggle="modal" data-target="#editModal"
+                    data-opnumber="{{ op.positionNumber }}"
+                    data-opnumbersold="{{ op.positionNumberPromSold }}"
+                    data-oppayer="{{ op.whoPayed }}"
+                    data-opamount="{{ op.amount }}"
+                    data-opalreadypayed="{{ op.alreadyPayed }}"
+                    data-opid="{{ op.id }}"
+                    data-opcompany="{{ op.company}}"
+                ><span class="glyphicon glyphicon-edit"></span> </a>
+            {% endif %}
         {% endif %}
-        
+
+        {% if user|in_group:"removers_globex" %}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a title="Удалить" href="/globex/remove/?id={{op.id}}">
+                <span class="glyphicon glyphicon-trash"></span>
+            </a>
+        {% endif %}
+
+        </td>
         
     </tr>
 {% empty %}

@@ -18,23 +18,320 @@ class Converter(View):
 
 
 class GlobexView(ListView):
+    """
+    company id = 0
+    """
     model = FinancialOperation
-    queryset = FinancialOperation.objects.filter(company=0).order_by('-positionNumber')
+    sort = {}
+
+    def get_context_data(self, **kwargs):
+        context = super(GlobexView, self).get_context_data(**kwargs)
+
+        if "order" in self.request.GET and "field" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            context["field"] = self.sort["field"]
+            context["order"] = self.sort["order"]
+
+            if "grouping" in self.request.GET:
+                context.update({"field": self.sort["field"],
+                                "grouping": self.request.GET["grouping"],
+                                "order": self.sort["order"]})
+            else:
+                context.update({"field": self.sort["field"], "order": self.sort["order"]})
+
+        return context
+
+    def get_queryset(self):
+        if "field" in self.request.GET and "order" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            result_sort_order_sign = ""
+
+            # usual sort here
+            if sort_order == "asc":
+                result_sort_order_sign += ""
+            else:
+                result_sort_order_sign = "-"
+
+            result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+
+            if sort_field != "alreadyPayed":
+                queryset = FinancialOperation.objects.filter(company=0
+                                                             ).order_by(result_sort_expr,
+                                                                        '-positionNumber')
+            else:
+                # custom sort for already payed field
+                if "grouping" in self.request.GET:
+                    ex_field = self.request.GET["grouping"]
+                else:
+                    ex_field = "positionNumber"
+
+                ex_field_sort_expr = "{}".format(ex_field)
+
+                if sort_order == "1":
+                    # mode 1: unpayed
+                    queryset = FinancialOperation.objects.filter(company=0).filter(
+                        alreadyPayed=0.0).order_by(ex_field_sort_expr)
+
+                if sort_order == "2":
+                    # mode 2: partically payed
+                    queryset = FinancialOperation.objects.filter(company=0).filter(
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+                if sort_order == "3":
+                    # mode 3: payed
+                    queryset = FinancialOperation.objects.filter(company=0).filter(
+                        alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+        else:
+            # unsorted. default sort is by positionNumber
+            queryset = FinancialOperation.objects.filter(company=0
+                                                         ).order_by('-positionNumber')
+        return queryset
 
 
 class RelLccView(ListView):
+    """
+    Company id = 1
+    """
     template_name = "desk/operations_company_rel.html"
-    queryset = FinancialOperation.objects.filter(company=1).order_by('-positionNumber')
+    sort = {}
+
+    def get_context_data(self, **kwargs):
+        context = super(RelLccView, self).get_context_data(**kwargs)
+
+        if "order" in self.request.GET and "field" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            context["field"] = self.sort["field"]
+            context["order"] = self.sort["order"]
+
+            if "grouping" in self.request.GET:
+                context.update({"field": self.sort["field"],
+                                "grouping": self.request.GET["grouping"],
+                                "order": self.sort["order"]})
+            else:
+                context.update({"field": self.sort["field"], "order": self.sort["order"]})
+
+        return context
+
+    def get_queryset(self):
+        if "field" in self.request.GET and "order" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            result_sort_order_sign = ""
+
+            # usual sort here
+            if sort_order == "asc":
+                result_sort_order_sign += ""
+            else:
+                result_sort_order_sign = "-"
+
+            result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+
+            if sort_field != "alreadyPayed":
+                queryset = FinancialOperation.objects.filter(company=1
+                                                             ).order_by(result_sort_expr,
+                                                                        '-positionNumber')
+            else:
+                # custom sort for already payed field
+                if "grouping" in self.request.GET:
+                    ex_field = self.request.GET["grouping"]
+                else:
+                    ex_field = "-positionNumber"
+
+                ex_field_sort_expr = "{}".format(ex_field)
+
+                if sort_order == "1":
+                    # mode 1: unpayed
+                    queryset = FinancialOperation.objects.filter(company=1).filter(
+                        alreadyPayed=0.0).order_by(ex_field_sort_expr)
+
+                if sort_order == "2":
+                    # mode 2: partically payed
+                    queryset = FinancialOperation.objects.filter(company=1).filter(
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+                if sort_order == "3":
+                    # mode 3: payed
+                    queryset = FinancialOperation.objects.filter(company=1).filter(
+                        alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+        else:
+            # unsorted. default sort is by positionNumber
+            queryset = FinancialOperation.objects.filter(company=1
+                                                         ).order_by('-positionNumber')
+        return queryset
 
 
 class GlobexExportView(ListView):
+    """
+    company id = 2
+    """
     template_name = "desk/operations_company_export.html"
-    queryset = FinancialOperation.objects.filter(company=2).order_by('-positionNumber')
+    sort = {}
+
+    def get_context_data(self, **kwargs):
+        context = super(GlobexExportView, self).get_context_data(**kwargs)
+
+        if "order" in self.request.GET and "field" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            context["field"] = self.sort["field"]
+            context["order"] = self.sort["order"]
+
+            if "grouping" in self.request.GET:
+                context.update({"field": self.sort["field"],
+                                "grouping": self.request.GET["grouping"],
+                                "order": self.sort["order"]})
+            else:
+                context.update({"field": self.sort["field"], "order": self.sort["order"]})
+
+        return context
+
+    def get_queryset(self):
+        if "field" in self.request.GET and "order" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            result_sort_order_sign = ""
+
+            # usual sort here
+            if sort_order == "asc":
+                result_sort_order_sign += ""
+            else:
+                result_sort_order_sign = "-"
+
+            result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+
+            if sort_field != "alreadyPayed":
+                queryset = FinancialOperation.objects.filter(company=2
+                                                             ).order_by(result_sort_expr,
+                                                                        '-positionNumber')
+            else:
+                # custom sort for already payed field
+                if "grouping" in self.request.GET:
+                    ex_field = self.request.GET["grouping"]
+                else:
+                    ex_field = "-positionNumber"
+
+                ex_field_sort_expr = "{}".format(ex_field)
+
+                if sort_order == "1":
+                    # mode 1: unpayed
+                    queryset = FinancialOperation.objects.filter(company=2).filter(
+                        alreadyPayed=0.0).order_by(ex_field_sort_expr)
+
+                if sort_order == "2":
+                    # mode 2: partically payed
+                    queryset = FinancialOperation.objects.filter(company=2).filter(
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+                if sort_order == "3":
+                    # mode 3: payed
+                    queryset = FinancialOperation.objects.filter(company=2).filter(
+                        alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+        else:
+            # unsorted. default sort is by positionNumber
+            queryset = FinancialOperation.objects.filter(company=2
+                                                         ).order_by('-positionNumber')
+        return queryset
 
 
 class PromelectronicaView(ListView):
     template_name = "desk/operations_promelectronica.html"
-    queryset = FinancialOperation.objects.filter(company=3).order_by('-positionNumber')
+    sort = {}
+
+    def get_context_data(self, **kwargs):
+        context = super(PromelectronicaView, self).get_context_data(**kwargs)
+
+        if "order" in self.request.GET and "field" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            context["field"] = self.sort["field"]
+            context["order"] = self.sort["order"]
+
+            if "grouping" in self.request.GET:
+                context.update({"field": self.sort["field"],
+                                "grouping": self.request.GET["grouping"],
+                                "order": self.sort["order"]})
+            else:
+                context.update({"field": self.sort["field"], "order": self.sort["order"]})
+
+        return context
+
+    def get_queryset(self):
+        if "field" in self.request.GET and "order" in self.request.GET:
+            sort_order = self.request.GET["order"]
+            sort_field = self.request.GET["field"]
+
+            self.sort = {"field": sort_field, "order": sort_order}
+
+            result_sort_order_sign = ""
+
+            # usual sort here
+            if sort_order == "asc":
+                result_sort_order_sign += ""
+            else:
+                result_sort_order_sign = "-"
+
+            result_sort_expr = "{}{}".format(result_sort_order_sign, sort_field)
+
+            if sort_field != "alreadyPayed":
+                queryset = FinancialOperation.objects.filter(company=3
+                                                             ).order_by(result_sort_expr,
+                                                                        '-positionNumber')
+            else:
+                # custom sort for already payed field
+                if "grouping" in self.request.GET:
+                    ex_field = self.request.GET["grouping"]
+                else:
+                    ex_field = "-positionNumber"
+
+                ex_field_sort_expr = "{}".format(ex_field)
+
+                if sort_order == "1":
+                    # mode 1: unpayed
+                    queryset = FinancialOperation.objects.filter(company=3).filter(
+                        alreadyPayed=0.0).order_by(ex_field_sort_expr)
+
+                if sort_order == "2":
+                    # mode 2: partically payed
+                    queryset = FinancialOperation.objects.filter(company=3).filter(
+                        alreadyPayed__gt=0.0).exclude(alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+                if sort_order == "3":
+                    # mode 3: payed
+                    queryset = FinancialOperation.objects.filter(company=3).filter(
+                        alreadyPayed=F("amount")).order_by(ex_field_sort_expr)
+
+        else:
+            # unsorted. default sort is by positionNumber
+            queryset = FinancialOperation.objects.filter(company=3
+                                                         ).order_by('-positionNumber')
+        return queryset
 
 
 class PromsoldinvoicesView(ListView):
@@ -81,13 +378,14 @@ class PromsoldinvoicesView(ListView):
 
             if sort_field != "alreadyPayed":
                 queryset = FinancialOperation.objects.filter(company=4
-                                                             ).order_by(result_sort_expr)
+                                                             ).order_by(result_sort_expr, '-positionNumberPromSold',
+                                                                        '-positionNumber')
             else:
                 # custom sort for already payed field
                 if "grouping" in self.request.GET:
                     ex_field = self.request.GET["grouping"]
                 else:
-                    ex_field = "positionNumberPromSold"
+                    ex_field = "-positionNumberPromSold"
 
                 ex_field_sort_expr = "{}".format(ex_field)
 
@@ -344,6 +642,101 @@ def edit_operation(request):
             else:
                 print(form.errors)
             return HttpResponseRedirect('/')
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def remove_globex_export_op(request):
+    """
+    Remove globex export operation
+    """
+    if request.method == 'GET':
+        try:
+            operation_id = request.GET.get("id", None)
+
+            # nothing to do
+            if operation_id is None:
+                return HttpResponseRedirect('/globex_export/')
+
+            FinancialOperation.objects.get(id=operation_id).delete()
+            return HttpResponseRedirect('/globex_export/')
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def remove_globex_op(request):
+    """
+    Remove globex operation
+    """
+    if request.method == 'GET':
+        try:
+            operation_id = request.GET.get("id", None)
+
+            # nothing to do
+            if operation_id is None:
+                return HttpResponseRedirect('/globex/')
+
+            FinancialOperation.objects.get(id=operation_id).delete()
+            return HttpResponseRedirect('/globex/')
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def remove_rel_op(request):
+    """
+    Remove rel export operation
+    """
+    if request.method == 'GET':
+        try:
+            operation_id = request.GET.get("id", None)
+
+            # nothing to do
+            if operation_id is None:
+                return HttpResponseRedirect('/rel_lcc/')
+
+            FinancialOperation.objects.get(id=operation_id).delete()
+            return HttpResponseRedirect('/rel_lcc/')
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def remove_promelectronica_op(request):
+    """
+    Remove rel export operation
+    """
+    if request.method == 'GET':
+        try:
+            operation_id = request.GET.get("id", None)
+
+            # nothing to do
+            if operation_id is None:
+                return HttpResponseRedirect('/promelectronica/')
+
+            FinancialOperation.objects.get(id=operation_id).delete()
+            return HttpResponseRedirect('/promelectronica/')
+        except Exception as e:
+            print(e.__doc__)
+            print(e.message)
+
+
+def remove_promsold_op(request):
+    """
+    Remove rel export operation
+    """
+    if request.method == 'GET':
+        try:
+            operation_id = request.GET.get("id", None)
+
+            # nothing to do
+            if operation_id is None:
+                return HttpResponseRedirect('/promsoldinvoices/')
+
+            FinancialOperation.objects.get(id=operation_id).delete()
+            return HttpResponseRedirect('/promsoldinvoices/')
         except Exception as e:
             print(e.__doc__)
             print(e.message)

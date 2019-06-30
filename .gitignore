@@ -6,3 +6,13 @@ Cashdesk/\.DS_Store
 \.idea/
 
 \.DS_Store
+
+cashdesk-notes\.txt
+
+cashdesk-passwords\.pages
+
+cashdesk-passwords\.pdf
+
+Cashdesk/media/
+
+*.log
