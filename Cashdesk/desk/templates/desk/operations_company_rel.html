@@ -148,7 +148,7 @@ $('#editFormSendBtn').on('click', function (event) {
 <table class="table table-hover table-bordered">
     <thead>
         <tr>
-            <td>
+            <td width="10%">
             {% if field == "positionNumber" %}
                 {% if order == "asc" %}
                     <a href="/rel_lcc/?field=positionNumber&order=desc">
@@ -171,7 +171,7 @@ $('#editFormSendBtn').on('click', function (event) {
                 Номер</td>
             <td>Файл</td>
             <td>Плательщик</td>
-            <td>
+            <td width="10%">
             {% if field == "amount" %}
                 {% if order == "asc" %}
                     <a href="/rel_lcc/?field=amount&order=desc">
@@ -192,7 +192,7 @@ $('#editFormSendBtn').on('click', function (event) {
 
 
                 Сумма</td>
-            <td>
+            <td width="10%" >
 
                     {% if field == "alreadyPayed" and order == "3" %}
                     <a href="/rel_lcc/?field=alreadyPayed&order=3">
@@ -228,6 +228,7 @@ $('#editFormSendBtn').on('click', function (event) {
                     </a>
                 Оплачено</td>
             <td>&nbsp;</td>
+            <td>&nbsp;</td>
         </tr>
     </thead>
     <tbody>
@@ -243,7 +244,7 @@ $('#editFormSendBtn').on('click', function (event) {
         <td> {{ op.whoPayed }} </td>
         <td> {{ op.amount }} </td>
         <td> {{ op.alreadyPayed }} </td>
-        <td>
+        <td width="3%" style="text-align:right;">
         {% if op.isClosed == 0 %}
                 {% if user|in_group:"editors_rel_llc" %}
                     <a title="Редактировать" href="" data-toggle="modal" data-target="#editModal"
@@ -270,13 +271,38 @@ $('#editFormSendBtn').on('click', function (event) {
                 </a>
             {% endif %}
         {% endif %}
-
+        </td>
+        <td width="3%" style="text-align:right;">
         {% if user|in_group:"removers_rel_llc" %}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <a title="Удалить" href="/rel_lcc/remove/?id={{op.id}}">
+            <a title="Удалить" href="#"
+            data-href="/rel_lcc/remove/?id={{op.id}}" data-toggle="modal" data-target="#confirm-delete"
+            >
                 <span class="glyphicon glyphicon-trash"></span>
             </a>
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Внимание! Вы собираетесь удалить запись. Это действие невозможно отменить!
+            </div>
+            <div class="modal-body">
+                Подтвердить удаление?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <a class="btn btn-danger btn-ok">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script language="JavaScript">
+$('#confirm-delete').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+});
+</script>
+
         {% endif %}
+        </td>
 
         
     </tr>
